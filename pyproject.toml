@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kwp"
+version = "0.1.0.dev0"
+description = "Open-data GIS workflow for municipal heat planning (kommunale Wärmeplanung) in Bavaria"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "AGPL-3.0-only"
+authors = [{ name = "Ivan Alonso" }]
+# Runtime dependencies are managed by conda (environment.yml) because
+# GDAL/PROJ need compiled binaries; they are therefore not repeated here.
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["src"]

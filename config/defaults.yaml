@@ -1,0 +1,27 @@
+# Shared defaults for all municipalities.
+# A municipality file (e.g. config/bubenreuth.yaml) overrides any key defined here.
+# Every numeric assumption must carry its source in a comment.
+
+crs: 25832            # ETRS89 / UTM zone 32N – official CRS of Bavarian geodata (LDBV)
+
+paths:
+  raw: data/raw
+  interim: data/interim
+  processed: data/processed
+
+database:
+  # Connection parameters come from the .env file (PGHOST, PGPORT, ...), never from YAML.
+  # Each municipality gets its own schema prefix so several cases can live in one database.
+  schemas: [raw, base, calc, result, meta]
+
+heat_density_thresholds:
+  # Thresholds as quoted in the published plans from the federal guideline
+  # "Leitfaden Wärmeplanung" (2024). Used for classification only (M5).
+  # Line density in MWh per metre of street and year:
+  line_mwh_per_m_a: [0.7, 1.5, 2.0]
+  # Area density in MWh per hectare and year:
+  area_mwh_per_ha_a: [70, 175, 415, 1050]
+
+uncertainty:
+  monte_carlo_runs: 500   # number of Monte Carlo draws for heat demand (M3); tuned later
+  report_percentiles: [10, 50, 90]
