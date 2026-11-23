@@ -1,0 +1,17 @@
+# Municipality configuration: Bubenreuth (main case study)
+gemeinde:
+  name: Bubenreuth
+  key: bubenreuth            # used for --gemeinde and as database schema prefix
+  # Amtlicher Gemeindeschlüssel (AGS, 8 digits). UNVERIFIED – taken from a
+  # non-official source; must be confirmed against the official Destatis
+  # Gemeindeverzeichnis in milestone M1 before any download relies on it.
+  ags: "09572119"
+  ags_verified: false
+  landkreis: Erlangen-Höchstadt
+
+planning:
+  # Target year for greenhouse-gas neutrality as set in the published plan.
+  target_year: 2040
+
+validation:
+  targets_file: validation/targets_bubenreuth.yaml

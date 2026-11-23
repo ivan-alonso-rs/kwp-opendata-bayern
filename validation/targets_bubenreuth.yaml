@@ -1,0 +1,54 @@
+# Validation targets for Bubenreuth.
+# Source: Kommunale Wärmeplanung Bubenreuth – Abschlussbericht, GP JOULE Consult, May 2025.
+# "page" = PDF page of the published document.
+#
+# IMPORTANT: the published plan does not document its heat-demand method in detail
+# and combines metered data we do not have. This comparison is therefore a
+# PLAUSIBILITY check, not a replication. Tolerances reflect that.
+
+source: "Kommunale Wärmeplanung Bubenreuth, Abschlussbericht (GP JOULE Consult, 2025-05)"
+
+targets:
+  - id: buildings_total
+    description: Number of buildings (Zensus 2022 basis)
+    value: 1364
+    unit: buildings
+    page: 16
+    tolerance_rel: 0.02
+    note: Same underlying source (Zensus 2022); differences mainly from boundary clipping.
+
+  - id: heat_demand_total
+    description: Total heat demand
+    value: 45000
+    unit: MWh/a
+    page: 20
+    tolerance_rel: 0.15
+    note: >-
+      The plan also shows 43.9 GWh/a for 2025 (page 58). Our modelled demand
+      (no metered data) vs. a calibrated plan value; ±15 % is a reasonable band.
+
+  - id: share_residential
+    description: Share of residential sector in heat demand
+    value: 0.90
+    unit: fraction
+    page: 20
+    tolerance_abs: 0.05
+    note: The summary (page 4) states 94 %; the plan is internally inconsistent by ~4 points.
+
+  - id: ghg_total
+    description: Greenhouse-gas emissions of heat supply
+    value: 11118
+    unit: t CO2e/a
+    page: 31
+    tolerance_rel: 0.15
+    note: >-
+      Recomputing with the plan's own emission factors and energy-carrier shares
+      gives roughly 11,800–12,200 t; the published value is not reproducible exactly.
+
+  - id: demand_2040_scenario1
+    description: Heat demand 2040, scenario 1 (−1 %/a in existing stock)
+    value: 39500
+    unit: MWh/a
+    page: 58
+    tolerance_rel: 0.05
+    note: Compared relative to our own 2025 baseline with the same reduction assumption.

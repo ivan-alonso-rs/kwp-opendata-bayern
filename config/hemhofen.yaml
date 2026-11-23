@@ -1,0 +1,15 @@
+# Municipality configuration: Hemhofen (validation case)
+gemeinde:
+  name: Hemhofen
+  key: hemhofen
+  # Amtlicher Gemeindeschlüssel (AGS, 8 digits): to be looked up in the official
+  # Destatis Gemeindeverzeichnis in milestone M1.
+  ags: null
+  ags_verified: false
+  landkreis: Erlangen-Höchstadt
+
+planning:
+  target_year: 2045
+
+validation:
+  targets_file: validation/targets_hemhofen.yaml
