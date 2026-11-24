@@ -6,6 +6,7 @@ Usage (from the repository root, environment `kwp` active):
     python scripts/01_download.py --gemeinde bubenreuth             # download
     python scripts/01_download.py --gemeinde bubenreuth --only lod2 # one source
     python scripts/01_download.py --gemeinde bubenreuth --with-dlm  # + Basis-DLM (1.9 GB)
+    python scripts/01_download.py --gemeinde bubenreuth --accept-ags # accept a matching AGS
 
 Order of work:
   1. Verwaltungsgebiete (63 MB, all of Bavaria) -> AGS check (kwp.ags.verify_ags)
@@ -16,10 +17,10 @@ Order of work:
 Everything is written to data/raw/ and recorded in data/raw/manifest.json.
 
 Who decides what:
-  automated   downloads, resume, checksums, manifest
-  person      setting `ags_verified: true` in config/<gemeinde>.yaml after reading
-              the AGS check below; filling in the shapefile field names in
-              config/sources.yaml (the script prints them if they are missing)
+  automated   downloads, resume, checksums, manifest, finding the AGS columns,
+              comparing the AGS
+  person      accepting the AGS result: only when you pass --accept-ags does the
+              script write `ags_verified: true` into config/<gemeinde>.yaml
 
 Exit codes: 0 = done, 1 = a download failed, 2 = configuration problem.
 """
@@ -82,37 +83,62 @@ def plan_files(session, key: str, src: dict, ags: str) -> tuple[list[RemoteFile]
     return [RemoteFile(name=url.rsplit("/", 1)[-1], urls=[url])], {}
 
 
-def check_ags(cfg: dict, src: dict, zip_path: Path) -> None:
-    """Run Ivan's verify_ags and print a clear verdict. Never edits the config."""
-    from kwp.ags import verify_ags
+def check_ags(cfg: dict, src: dict, zip_path: Path, accept: bool) -> bool:
+    """Confirm the AGS of the config against ALKIS Verwaltungsgebiete.
+
+    1. If sources.yaml says where to look (member/name_field/ags_field), use it.
+       Otherwise detect it (kwp.ags.detect_fields) and print what was found.
+    2. Compare. Print a clear verdict.
+    3. Only with --accept-ags AND a match: set ags_verified: true in the config.
+       Without the flag the config is never changed (the decision is a person's).
+    Returns False only when the official file shows a DIFFERENT key: then the
+    other downloads would fetch the wrong municipality, so main() stops.
+    """
+    from kwp.ags import detect_fields, suggest_ags_field, verify_ags
 
     name, ags = cfg["gemeinde"]["name"], cfg["gemeinde"]["ags"]
-    if not (src.get("name_field") and src.get("ags_field")):
-        # Field names not known yet: show them so a person can fill in sources.yaml.
-        import pyogrio
+    if src.get("member") and src.get("name_field") and src.get("ags_field"):
+        dataset = f"/vsizip/{zip_path.as_posix()}/{src['member']}"
+        layer, name_field, ags_field = src.get("layer"), src["name_field"], src["ags_field"]
+    else:
+        print("\n  AGS check: detecting file and columns in the official zip ...")
+        guesses = detect_fields(zip_path, name)
+        for g in guesses:
+            print(f"    candidate: {g.dataset.split('.zip/', 1)[-1]} | layer {g.layer} | "
+                  f"name column {g.name_field} | key column {g.ags_field}")
+        best = suggest_ags_field(guesses)
+        if best is None:
+            print(f"  AGS check: name {name!r} not found in any layer.")
+            return True
+        dataset, layer = best.dataset, best.layer
+        name_field, ags_field = best.name_field, best.ags_field
+        member = dataset.split(".zip/", 1)[-1]
+        print("  chosen. To skip detection next time, put in config/sources.yaml (verwaltung):")
+        print(f"    member: {member}\n    layer: {layer}\n"
+              f"    name_field: {name_field}\n    ags_field: {ags_field}")
 
-        vpath = f"/vsizip/{zip_path.as_posix()}"
-        print("\n  AGS check: field names missing in config/sources.yaml (verwaltung).")
-        print("  Layers and fields in the official file:")
-        for layer_name, _geom in pyogrio.list_layers(vpath):
-            info = pyogrio.read_info(vpath, layer=layer_name)
-            print(f"    layer {layer_name!r}: {list(info['fields'])}")
-        print("  -> fill in layer, name_field, ags_field and run again.")
-        return
-    try:
-        res = verify_ags(f"/vsizip/{zip_path.as_posix()}", name, ags,
-                         src["name_field"], src["ags_field"], layer=src.get("layer"))
-    except NotImplementedError as exc:
-        print(f"\n  AGS check skipped: {exc} (src/kwp/ags.py)")
-        return
+    res = verify_ags(dataset, name, ags, name_field, ags_field, layer=layer)
+    cfg_file = CONFIG_DIR / f"{cfg['gemeinde']['key']}.yaml"
     if res.matches:
         print(f"\n  AGS check OK: {name} = {ags} in ALKIS Verwaltungsgebiete.")
-        if not cfg["gemeinde"].get("ags_verified"):
-            print(f"  -> you may now set ags_verified: true in config/{cfg['gemeinde']['key']}.yaml")
+        if cfg["gemeinde"].get("ags_verified"):
+            return True
+        if accept:
+            text = cfg_file.read_text(encoding="utf-8")
+            if "ags_verified: false" in text:
+                cfg_file.write_text(text.replace("ags_verified: false", "ags_verified: true", 1),
+                                    encoding="utf-8")
+                print(f"  --accept-ags: set ags_verified: true in {cfg_file.name}")
+        else:
+            print("  -> to accept, run again with --accept-ags (or edit the config by hand)")
+        return True
     elif res.found:
         print(f"\n  AGS check FAILED: config says {ags}, official file says {res.found_ags}.")
+        print("  -> stopping: fix gemeinde.ags in the config before downloading anything else.")
+        return False
     else:
-        print(f"\n  AGS check: name {name!r} not found in field {src['name_field']!r}.")
+        print(f"\n  AGS check: name {name!r} not found in column {name_field!r}.")
+    return True
 
 
 def main() -> int:
@@ -122,6 +148,8 @@ def main() -> int:
     ap.add_argument("--only", choices=SOURCE_ORDER, action="append",
                     help="download only these sources (repeatable)")
     ap.add_argument("--with-dlm", action="store_true", help="also download Basis-DLM (1.9 GB)")
+    ap.add_argument("--accept-ags", action="store_true",
+                    help="if the AGS check matches, set ags_verified: true in the config")
     args = ap.parse_args()
 
     try:
@@ -186,8 +214,9 @@ def main() -> int:
 
         if key == "verwaltung":
             zip_path = dest / files[0].name
-            if zip_path.exists():
-                check_ags(cfg, src, zip_path)
+            if zip_path.exists() and not check_ags(cfg, src, zip_path, args.accept_ags):
+                manifest.save()
+                return 2
 
     print(f"\nManifest: {manifest.path}  ({len(manifest.entries)} files logged)")
     if failures:

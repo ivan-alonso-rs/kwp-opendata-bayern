@@ -29,9 +29,10 @@ sources:
     target: verwaltung
     url: https://geodaten.bayern.de/odd/m/4/verwaltung/alkis-verwaltung.zip
     approx_size_mb: 63          # Content-Range on 2026-11-23: 63 408 746 bytes
-    # Field names inside the shapefile, needed for the AGS check.
-    # null = not inspected yet: 01_download.py then prints the layers and fields
-    # so that a person can fill these in (decision: person, not code).
+    # Where the AGS check looks inside the zip. null = detect automatically
+    # (kwp.ags.detect_fields); the script prints what it found so that the values
+    # can be written here and the detection is skipped next time.
+    member: null        # file inside the zip, e.g. "folder/gemeinde.shp"
     layer: null
     name_field: null
     ags_field: null
