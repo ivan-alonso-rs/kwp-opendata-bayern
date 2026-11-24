@@ -2,9 +2,10 @@
 gemeinde:
   name: Bubenreuth
   key: bubenreuth            # used for --gemeinde and as database schema prefix
-  # Amtlicher Gemeindeschlüssel (AGS, 8 digits). UNVERIFIED – taken from a
-  # non-official source; must be confirmed against the official Destatis
-  # Gemeindeverzeichnis in milestone M1 before any download relies on it.
+  # Amtlicher Gemeindeschlüssel (AGS, 8 digits). Source: LDBV LoD2 index
+  # (geodaten.bayern.de/odd/a/lod2/citygml/meta/kml/gemeinde.kml, checked 2026-11-23),
+  # which links "Bubenreuth" to metalink 09572119.meta4. Set ags_verified to true
+  # only after the local check against ALKIS Verwaltungsgebiete (01_download.py).
   ags: "09572119"
   ags_verified: false
   landkreis: Erlangen-Höchstadt

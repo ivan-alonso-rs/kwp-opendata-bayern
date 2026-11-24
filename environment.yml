@@ -27,6 +27,7 @@ dependencies:
   - pandas
   - matplotlib
   - jupyterlab
+  - pytest          # tests/ (run: pytest -v)
   - pip
   - pip:
       - -e .        # installs the local package "kwp" (src/kwp) in editable mode

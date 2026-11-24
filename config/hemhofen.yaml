@@ -2,9 +2,11 @@
 gemeinde:
   name: Hemhofen
   key: hemhofen
-  # Amtlicher Gemeindeschlüssel (AGS, 8 digits): to be looked up in the official
-  # Destatis Gemeindeverzeichnis in milestone M1.
-  ags: null
+  # Amtlicher Gemeindeschlüssel (AGS, 8 digits). Source: LDBV LoD2 index
+  # (geodaten.bayern.de/odd/a/lod2/citygml/meta/kml/gemeinde.kml, checked 2026-11-23),
+  # which links "Hemhofen" to metalink 09572130.meta4. Set ags_verified to true
+  # only after the local check against ALKIS Verwaltungsgebiete (01_download.py).
+  ags: "09572130"
   ags_verified: false
   landkreis: Erlangen-Höchstadt
 

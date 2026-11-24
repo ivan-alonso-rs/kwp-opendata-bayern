@@ -42,8 +42,12 @@ def _read_yaml(path: Path) -> dict:
 
 
 def available_gemeinden() -> list[str]:
-    """List municipality keys for which a config file exists."""
-    return sorted(p.stem for p in CONFIG_DIR.glob("*.yaml") if p.stem != "defaults")
+    """List municipality keys for which a config file exists.
+
+    defaults.yaml and sources.yaml are shared files, not municipalities.
+    """
+    shared = {"defaults", "sources"}
+    return sorted(p.stem for p in CONFIG_DIR.glob("*.yaml") if p.stem not in shared)
 
 
 def load_config(gemeinde: str) -> dict[str, Any]:
