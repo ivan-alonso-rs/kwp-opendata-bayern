@@ -1,0 +1,33 @@
+# Conda environment for kwp-opendata-bayern.
+# Create with:  conda env create -f environment.yml
+# Update with:  conda env update -f environment.yml --prune
+#
+# conda-forge is used because GDAL, PROJ, GEOS and geopandas are built
+# consistently there (mixing channels is a common source of DLL errors on Windows).
+name: kwp
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  # --- geospatial core ---
+  - gdal            # provides ogr2ogr and the GML driver used to read CityGML (LoD2)
+  - geopandas
+  - pyogrio         # fast vector I/O for geopandas
+  - shapely>=2
+  - pyproj
+  - rasterio
+  # --- database ---
+  - sqlalchemy>=2
+  - psycopg2
+  - geoalchemy2
+  # --- utilities ---
+  - pyyaml
+  - requests
+  - numpy
+  - pandas
+  - matplotlib
+  - jupyterlab
+  - pytest          # tests/ (run: pytest -v)
+  - pip
+  - pip:
+      - -e .        # installs the local package "kwp" (src/kwp) in editable mode

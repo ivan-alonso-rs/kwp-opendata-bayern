@@ -1,0 +1,67 @@
+# Validation targets for Hemhofen.
+# Source: Kommunale Wärmeplanung Hemhofen, Bayernwerk Netz GmbH / INEV, 2026-02-25.
+# "page" = PDF page of the published document.
+#
+# Hemhofen is the stronger reference: its demand model is LoD2-based and calibrated
+# with the municipal energy balance, and it publishes street-level line densities.
+
+source: "Kommunale Wärmeplanung Hemhofen (Bayernwerk Netz / INEV, 2026-02-25)"
+
+targets:
+  - id: heat_final_energy_total
+    description: Final energy for heat, all sectors, balance year 2022
+    value: 35927
+    unit: MWh/a
+    page: 32
+    tolerance_rel: 0.20
+    note: ±20 % for our uncalibrated model; ±5 % expected after calibration.
+
+  - id: share_private_households
+    description: Share of private households in heat consumption
+    value: 0.853
+    unit: fraction
+    page: 34
+    tolerance_abs: 0.05
+
+  - id: ghg_heat
+    description: Greenhouse-gas emissions of heat
+    value: 8716
+    unit: t CO2e/a
+    page: 32
+    tolerance_rel: 0.15
+
+  - id: line_density_schloss_100
+    description: Line heat density, area "Hemhofen – Schloss", 100 % connection rate
+    value: 1325
+    unit: kWh/(m·a)
+    page: 41
+    tolerance_rel: 0.20
+    note: Area polygon must be digitised from the plan map (manual step, documented).
+
+  - id: line_density_leithe_100
+    description: Line heat density, area "Leithe", 100 % connection rate
+    value: 935
+    unit: kWh/(m·a)
+    page: 42
+    tolerance_rel: 0.20
+
+  - id: line_density_leithe_60
+    description: Line heat density, area "Leithe", 60 % connection rate
+    value: 561
+    unit: kWh/(m·a)
+    page: 42
+    tolerance_rel: 0.20
+
+  - id: line_density_zeckern_100
+    description: Line heat density, commercial area "Hemhofen-Zeckern", 100 % connection rate
+    value: 916
+    unit: kWh/(m·a)
+    page: 44
+    tolerance_rel: 0.20
+
+  - id: line_density_zeckern_60
+    description: Line heat density, commercial area "Hemhofen-Zeckern", 60 % connection rate
+    value: 550
+    unit: kWh/(m·a)
+    page: 46
+    tolerance_rel: 0.20

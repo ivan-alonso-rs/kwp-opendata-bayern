@@ -1,0 +1,92 @@
+# Official download sources (milestone M1).
+#
+# Every URL here was checked on the provider's product page on 2026-11-23.
+# The code never hard-codes a URL: it reads this file. If a provider changes a
+# URL, only this file changes.
+#
+# Placeholders filled in by scripts/01_download.py:
+#   {ags}  8-digit Amtlicher Gemeindeschlüssel, e.g. 09572119
+#   {lkr}  5-digit district key = first 5 digits of the AGS, e.g. 09572
+#
+# scope says where the file lands and whether it is shared between municipalities:
+#   gemeinde  -> data/raw/<gemeinde>/<target>/
+#   landkreis -> data/raw/_shared/<target>/   (one file per district)
+#   bayern    -> data/raw/_shared/<target>/   (one file for all of Bavaria)
+#   germany   -> data/raw/_shared/<target>/   (one file for all of Germany)
+
+attribution:
+  ldbv: "Geobasisdaten: Bayerische Vermessungsverwaltung – www.geodaten.bayern.de (Daten verändert), Lizenz: CC BY 4.0"
+  zensus: "Zensus 2022: Statistische Ämter des Bundes und der Länder, Datenlizenz Deutschland – Namensnennung – Version 2.0 (www.govdata.de/dl-de/by-2-0), Daten verändert"
+
+sources:
+  verwaltung:
+    title: ALKIS Verwaltungsgebiete (Gemeinde-, Landkreis-, Bezirksgrenzen)
+    provider: Bayerische Vermessungsverwaltung (LDBV)
+    product_page: https://geodaten.bayern.de/opengeodata/OpenDataDetail.html?pn=verwaltung
+    license: CC BY 4.0
+    attribution: ldbv
+    scope: bayern
+    target: verwaltung
+    url: https://geodaten.bayern.de/odd/m/4/verwaltung/alkis-verwaltung.zip
+    approx_size_mb: 63          # Content-Range on 2026-11-23: 63 408 746 bytes
+    # Field names inside the shapefile, needed for the AGS check.
+    # null = not inspected yet: 01_download.py then prints the layers and fields
+    # so that a person can fill these in (decision: person, not code).
+    layer: null
+    name_field: null
+    ags_field: null
+
+  lod2:
+    title: 3D-Gebäudemodelle LoD2 (CityGML, Kacheln 2 km x 2 km)
+    provider: Bayerische Vermessungsverwaltung (LDBV)
+    product_page: https://geodaten.bayern.de/opengeodata/OpenDataDetail.html?pn=lod2
+    license: CC BY 4.0
+    attribution: ldbv
+    scope: gemeinde
+    target: lod2
+    # Metalink per municipality. Lists every 2 km tile touching the municipality
+    # with its size, SHA-256 and two mirrors (download1/2.bayernwolke.de).
+    # Index of all municipalities: .../meta/kml/gemeinde.kml
+    metalink_url: https://geodaten.bayern.de/odd/a/lod2/citygml/meta/metalink/{ags}.meta4
+
+  alkis_tn:
+    title: ALKIS Tatsächliche Nutzung (Shape, je Landkreis)
+    provider: Bayerische Vermessungsverwaltung (LDBV)
+    product_page: https://geodaten.bayern.de/opengeodata/OpenDataDetail.html?pn=tatsaechlichenutzung
+    license: CC BY 4.0
+    attribution: ldbv
+    scope: landkreis
+    target: alkis_tn
+    url: https://download1.bayernwolke.de/a/tn/lkr/tn_{lkr}.zip
+    approx_size_mb: 100         # product page: "< 100 MB" for Erlangen-Höchstadt
+
+  basis_dlm:
+    title: ATKIS Basis-DLM plus (GeoPackage, ganz Bayern)
+    provider: Bayerische Vermessungsverwaltung (LDBV)
+    product_page: https://geodaten.bayern.de/opengeodata/OpenDataDetail.html?pn=atkis_basis_dlm
+    license: CC BY 4.0
+    attribution: ldbv
+    scope: bayern
+    target: basis_dlm
+    url: https://geodaten.bayern.de/odd/m/2/basisdlm/plus/by_basisdlm_plus.zip
+    approx_size_mb: 1875        # Content-Range on 2026-11-23: 1 875 052 418 bytes
+    optional: true              # only needed from M5 (street segments); use --with-dlm
+
+  zensus2022:
+    title: Zensus 2022 – Gitterdaten 100 m
+    provider: Statistische Ämter des Bundes und der Länder (Destatis)
+    product_page: https://www.destatis.de/DE/Themen/Gesellschaft-Umwelt/Bevoelkerung/Zensus2022/_publikationen.html
+    license: dl-de/by-2-0
+    attribution: zensus
+    scope: germany
+    target: zensus2022
+    base_url: https://www.destatis.de/static/DE/zensus/gitterdaten/
+    # File stem -> what we use it for. All files cover the whole of Germany.
+    tables:
+      Zensus2022_Bevoelkerungszahl: population per cell (plausibility)
+      Gebaeude_nach_Baujahr_in_Mikrozensus_Klassen: construction-year classes -> IWU/TABULA age class
+      Gebaeude_mit_Wohnraum_nach_Gebaeudetyp_Groesse: building type (EFH/RH/MFH) -> TABULA type
+      Gebaeude_nach_Anzahl_der_Wohnungen_im_Gebaeude: dwellings per building -> type check
+      Gebaeude_mit_Wohnraum_nach_Energietraeger_der_Heizung: energy carrier -> Ist-Bilanz, CO2
+      Gebaeude_mit_Wohnraum_nach_ueberwiegender_Heizungsart: heating system (central, district, ...)
+      Durchschnittliche_Flaeche_je_Wohnung_in_Gitterzellen: floor area per dwelling -> plausibility of AN
